@@ -1,6 +1,9 @@
 from enum import Enum
 from uuid import UUID, uuid4
+from decimal import Decimal
 from datetime import datetime, timezone
+
+from src.domain.value_object.order_item import OrderItem
 
 
 class OrderStatus(Enum):
@@ -12,12 +15,13 @@ class Order:
     """
     Бизнес модель Order
     """
-    __slots__ = ('order_id', '_status', '_created_at', '_updated_at', '_version')
+    __slots__ = ('order_id', '_status', '_items','_created_at', '_updated_at', '_version')
 
-    def __init__(self, order_id: UUID | None = None) -> None:
+    def __init__(self, order_id: UUID | None = None, items: list[OrderItem] | None = None) -> None:
         now = datetime.now(timezone.utc)
         self.order_id = order_id or uuid4()
         self._status = OrderStatus.NEW
+        self._items: list[OrderItem] = items or []
         self._created_at = now
         self._updated_at = now
         self._version = 1
@@ -25,6 +29,10 @@ class Order:
     @property
     def status(self) -> OrderStatus:
         return self._status
+
+    @property
+    def items(self) -> tuple[OrderItem, ...]:
+        return tuple(self._items)
 
     @property
     def created_at(self) -> datetime:
@@ -74,17 +82,34 @@ class Order:
     def __hash__(self) -> int:
         return hash(self.order_id)
 
-if __name__ == "__main__":
-    order1 = Order()
-    order2 = Order(order1.order_id)
-    order3 = Order()
-    order3.confirm()
-    print(order1==order2)
-    print(order1==order3)
+    def add_item(
+            self,
+            product_id: UUID,
+            quantity: int,
+            price: Decimal | str | float
+    ) -> OrderItem:
+        if self.status != OrderStatus.NEW:
+            raise ValueError("Cannot modify confirmed or cancelled order")
 
-    my_set = {order1}
-    my_set.add(order2)
-    print(my_set)
-    my_set.add(order3)
-    print(my_set)
-    print(order1._version)
+        normalized_price = Decimal(str(price))
+
+        for i, item in enumerate(self._items):
+            if item.product_id == product_id and item.price == normalized_price:
+                new_item = OrderItem(
+                    product_id=product_id,
+                    quantity=item.quantity + quantity,
+                    price=normalized_price
+                )
+                self._items[i] = new_item
+                self._touch()
+                return new_item
+
+        new_item = OrderItem(
+            product_id=product_id,
+            quantity=quantity,
+            price=normalized_price
+        )
+
+        self._items.append(new_item)
+        self._touch()
+        return new_item
