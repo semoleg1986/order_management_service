@@ -58,7 +58,8 @@ class Order:
             f"{self.order_id!r}, "
             f"status={self._status.value!r}), "
             f"version={self._version}, "
-            f"created={self._created_at: %Y-%m-%d %H:%M:%S} "
+            f"created={self._created_at:%Y-%m-%d %H:%M:%S} "
+            f"updated={self._updated_at:%Y-%m-%d %H:%M:%S} "
             f")"
         )
 
@@ -77,7 +78,6 @@ if __name__ == "__main__":
     order1 = Order()
     order2 = Order(order1.order_id)
     order3 = Order()
-    order
     order3.confirm()
     print(order1==order2)
     print(order1==order3)
@@ -87,3 +87,4 @@ if __name__ == "__main__":
     print(my_set)
     my_set.add(order3)
     print(my_set)
+    print(order1._version)
