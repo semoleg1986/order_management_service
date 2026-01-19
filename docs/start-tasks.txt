@@ -1,0 +1,119 @@
+Шаг 0. Что значит «писать DDD» (Done)
+
+Важно сразу снять иллюзию:
+
+DDD — это не структура папок и не фреймворк.
+DDD — это способ думать и принимать решения о коде.
+
+Поэтому сначала:
+	•	не пишем сервисы,
+	•	не пишем репозитории,
+	•	не думаем про БД,
+	•	не думаем про API.
+
+Мы учимся моделировать домен.
+
+Шаг 1. Минимальный домен (без кода) (Done)
+
+Берём одну задачу:
+
+Клиент создаёт заказ и добавляет в него товары.
+
+Всё. Ничего больше.
+
+Шаг 2. На человеческом языке (это критично) (Done)
+
+Отвечаем словами, не кодом:
+	•	Что такое заказ?
+	•	Заказ — это список товаров, которые клиент хочет купить.
+	•	Может ли заказ существовать без товаров?
+	•	Да, на этапе создания.
+	•	Можно ли менять заказ?
+	•	Да, пока он не подтверждён.
+	•	Есть ли у заказа состояние?
+	•	Да: новый, подтверждённый, отменённый.
+
+Это и есть начало DDD.
+
+Шаг 3. Выделяем сущность (Entity) (Done)
+
+Правило:
+
+Если объект важен сам по себе и имеет идентичность — это Entity.
+
+Order — это Entity, потому что:
+	•	у него есть order_id
+	•	он живёт во времени
+	•	он меняется
+
+Пока только он, без Customer и Product.
+
+Шаг 4. Первый код (максимально простой) (Done)
+
+Это уже DDD, потому что:
+	•	у объекта есть идентичность
+	•	это не DTO
+	•	это не таблица БД
+
+	from uuid import UUID, uuid4
+
+class Order:
+    """
+    Бизнес модель Order
+    """
+    __slots__ = ('order_id',)
+
+    def __init__(self, order_id: UUID | None = None) -> None:
+        self.order_id = order_id or uuid4()
+
+Шаг 5. Добавляем поведение (самое важное) (Done)
+
+DDD = поведение внутри объекта, а не снаружи.
+
+from enum import Enum
+from uuid import UUID, uuid4
+
+class OrderStatus(Enum):
+    NEW = "new"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+
+class Order:
+    """
+    Бизнес модель Order
+    """
+    __slots__ = ('order_id', '_status')
+
+    def __init__(self, order_id: UUID | None = None) -> None:
+        self.order_id = order_id or uuid4()
+        self._status = OrderStatus.NEW
+
+    @property
+    def status(self) -> OrderStatus:
+        return self._status
+
+    def confirm(self) -> None:
+        if self._status != OrderStatus.NEW:
+            raise ValueError("Only new orders can be confirmed")
+        self._status = OrderStatus.CONFIRMED
+
+    def cancel(self) -> None:
+        if self._status == OrderStatus.CONFIRMED:
+            raise ValueError("Confirmed order cannot be cancelled")
+        self._status = OrderStatus.CANCELLED
+
+
+🔴 Важный момент для понимания:
+	•	Нет сервисов
+	•	Нет репозиториев
+	•	Нет инфраструктуры
+
+Есть только домен и правила.
+
+Шаг 6. Почему это правильно (и что ты сейчас учишь)
+
+Ты уже изучаешь:
+	•	что такое Entity
+	•	что такое инварианты
+	•	почему логика живёт внутри объекта
+	•	как выглядит богатая доменная модель
