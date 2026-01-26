@@ -18,10 +18,21 @@ repos:
 
   # --- Проверка типов ---
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.8.0
     hooks:
       - id: mypy
-        args: [ "--install-types", "--non-interactive" ]
+        args: [
+          "--install-types",
+          "--non-interactive",
+          "--explicit-package-bases",
+          "--ignore-missing-imports" # Поможет, если какой-то либы нет в типах
+        ]
+          # Убираем types-all, оставляем только базу
+        additional_dependencies: [
+          "types-setuptools",
+          "types-requests", # пример, если используешь requests
+          "tokenize-rt==5.2.0"
+        ]
 
   # --- Локальный хук для тестов ---
   - repo: local
