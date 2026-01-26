@@ -10,7 +10,7 @@ class CreateOrderHandler:
     def __init__(self, order_repo: OrderRepository):
         self._order_repo = order_repo
 
-    async def handler(self, cmd: CreateOrderCommand) -> UUID:
+    async def handle(self, cmd: CreateOrderCommand) -> UUID:
         if await self._order_repo.exists(cmd.order_id):
             raise OrderAlreadyExistsError(f"Order {cmd.order_id} already exists")
 
