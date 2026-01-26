@@ -1,10 +1,12 @@
-import pytest
-from uuid import uuid4
 from decimal import Decimal
+from uuid import uuid4
+
+import pytest
+
 from src.domain.value_object.order_item import OrderItem
 
-
 # --- Группа 1: Валидация при создании (Инварианты) ---
+
 
 def test_order_item_creation():
     product_id = uuid4()
@@ -36,6 +38,7 @@ def test_order_item_price_must_be_positive():
 
 # --- Группа 2: Поведение Value Object (Equality & Immutability) ---
 
+
 def test_order_item_equality():
     product_id = uuid4()
     # Проверяем, что разные типы (str и Decimal) приводятся к общему знаменателю,
@@ -59,39 +62,32 @@ def test_order_item_is_immutable():
 
 # --- Группа 3: Работа с Decimal ---
 
+
 def test_order_item_price_precision():
     """Проверка, что точность Decimal сохраняется"""
     price = Decimal("10.123456789")
     item = OrderItem(uuid4(), 1, price)
     assert item.price == price
 
+
 # --- Группа 4: Расчеты ---
+
 
 def test_order_item_total_price():
     """Проверка базового расчета стоимости позиции (цена * количество)."""
-    item = OrderItem(
-        product_id=uuid4(),
-        quantity=3,
-        price=Decimal("150.50")
-    )
+    item = OrderItem(product_id=uuid4(), quantity=3, price=Decimal("150.50"))
     # 3 * 150.50 = 451.50
     assert item.total_price() == Decimal("451.50")
 
+
 def test_order_item_total_price_precision():
     """Проверка точности при умножении дробных чисел."""
-    item = OrderItem(
-        product_id=uuid4(),
-        quantity=2,
-        price=Decimal("10.1234")
-    )
+    item = OrderItem(product_id=uuid4(), quantity=2, price=Decimal("10.1234"))
     # 2 * 10.1234 = 20.2468
     assert item.total_price() == Decimal("20.2468")
 
+
 def test_order_item_total_price_with_large_quantity():
     """Проверка расчета при больших объемах (целочисленное переполнение и т.д.)."""
-    item = OrderItem(
-        product_id=uuid4(),
-        quantity=1_000_000,
-        price=Decimal("0.01")
-    )
+    item = OrderItem(product_id=uuid4(), quantity=1_000_000, price=Decimal("0.01"))
     assert item.total_price() == Decimal("10000.00")

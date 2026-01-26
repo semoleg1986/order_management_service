@@ -1,7 +1,7 @@
+from datetime import datetime, timezone
+from decimal import Decimal
 from enum import Enum
 from uuid import UUID, uuid4
-from decimal import Decimal
-from datetime import datetime, timezone
 
 from src.domain.value_object.order_item import OrderItem
 
@@ -11,36 +11,45 @@ class OrderStatus(Enum):
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
 
+
 class Order:
     """
-        Aggregate Root: Order
+    Aggregate Root: Order
 
-        mermaid:
-        classDiagram
-            Order "1" *-- "many" OrderItem
-            class Order {
-                +UUID order_id
-                +OrderStatus status
-                +confirm()
-                +cancel()
-                +add_item()
-            }
-            class OrderItem {
-                +UUID product_id
-                +int quantity
-                +Decimal price
-                +total_price()
-            }
+    mermaid:
+    classDiagram
+        Order "1" *-- "many" OrderItem
+        class Order {
+            +UUID order_id
+            +OrderStatus status
+            +confirm()
+            +cancel()
+            +add_item()
+        }
+        class OrderItem {
+            +UUID product_id
+            +int quantity
+            +Decimal price
+            +total_price()
+        }
     """
-    __slots__ = ('_order_id', '_status', '_items','_created_at', '_updated_at', '_version')
+
+    __slots__ = (
+        "_order_id",
+        "_status",
+        "_items",
+        "_created_at",
+        "_updated_at",
+        "_version",
+    )
 
     def __init__(
-            self,
-            order_id: UUID | None = None,
-            items: list[OrderItem] | None = None,
-            status: OrderStatus = OrderStatus.NEW,
-            version: int = 1,
-            created_at: datetime | None = None
+        self,
+        order_id: UUID | None = None,
+        items: list[OrderItem] | None = None,
+        status: OrderStatus = OrderStatus.NEW,
+        version: int = 1,
+        created_at: datetime | None = None,
     ) -> None:
         now = datetime.now(timezone.utc)
         self._order_id = order_id or uuid4()
@@ -122,10 +131,7 @@ class Order:
         return hash(self._order_id)
 
     def add_item(
-            self,
-            product_id: UUID,
-            quantity: int,
-            price: Decimal | str | float
+        self, product_id: UUID, quantity: int, price: Decimal | str | float
     ) -> OrderItem:
         self._ensure_editable()
 
@@ -136,21 +142,20 @@ class Order:
                 new_item = OrderItem(
                     product_id=product_id,
                     quantity=item.quantity + quantity,
-                    price=normalized_price
+                    price=normalized_price,
                 )
                 self._items[i] = new_item
                 self._touch()
                 return new_item
 
         new_item = OrderItem(
-            product_id=product_id,
-            quantity=quantity,
-            price=normalized_price
+            product_id=product_id, quantity=quantity, price=normalized_price
         )
 
         self._items.append(new_item)
         self._touch()
         return new_item
+
 
 if __name__ == "__main__":
     print("--- Smoke Test Started ---")

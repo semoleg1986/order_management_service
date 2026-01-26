@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from uuid import UUID
 from decimal import Decimal, InvalidOperation
+from uuid import UUID
 
 
 @dataclass(frozen=True, slots=True)
@@ -8,9 +8,10 @@ class OrderItem:
     """
     ValueObject OrderItem
     •	нет сеттеров
-	•	нет анемичной модели
-	•	нет логики в сервисах
+        •	нет анемичной модели
+        •	нет логики в сервисах
     """
+
     product_id: UUID
     quantity: int
     price: Decimal
@@ -31,10 +32,14 @@ class OrderItem:
 
         object.__setattr__(self, "price", normalized_price)
 
-
     # __slots__ = ('_product_id', '_quantity', '_price')
     #
-    # def __init__(self, product_id: UUID, quantity: int, price: Decimal | str | float) -> None:
+    # def __init__(
+    #   self,
+    #   product_id: UUID,
+    #   quantity: int,
+    #   price: Decimal | str | float
+    #   ) -> None:
     #     if quantity <= 0:
     #         raise ValueError("Quantity must be greater than zero")
     #
