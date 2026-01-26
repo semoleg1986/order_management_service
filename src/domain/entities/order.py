@@ -1,15 +1,15 @@
 from datetime import datetime, timezone
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum, auto
 from uuid import UUID, uuid4
 
 from src.domain.value_object.order_item import OrderItem
 
 
-class OrderStatus(Enum):
-    NEW = "new"
-    CONFIRMED = "confirmed"
-    CANCELLED = "cancelled"
+class OrderStatus(StrEnum):
+    NEW = auto()
+    CONFIRMED = auto()
+    CANCELLED = auto()
 
 
 class Order:
@@ -113,7 +113,7 @@ class Order:
         return (
             f"Order("
             f"{self._order_id!r}, "
-            f"status={self._status.value!r}, "
+            f"status={self._status.value}, "
             f"version={self._version}, "
             f"created={self._created_at:%Y-%m-%d %H:%M:%S} "
             f"updated={self._updated_at:%Y-%m-%d %H:%M:%S})"
